@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ujiza/models/pharmacieModel.dart';
 import 'package:ujiza/screens/medicamentAll.dart';
 import 'package:ujiza/services/api_response.dart';
@@ -9,8 +10,7 @@ import 'package:ujiza/utils/customAppBar.dart';
 class SearchPharmacieAll extends StatefulWidget {
   final String id;
 
-  const SearchPharmacieAll(
-      {super.key, required this.id}); // Utilisez uniquement 'id'
+  const SearchPharmacieAll({super.key, required this.id});
 
   @override
   State<SearchPharmacieAll> createState() => _SearchPharmacieAllState();

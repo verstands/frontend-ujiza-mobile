@@ -1,11 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ujiza/screens/SearchPharcmacieAll.dart';
 import 'package:ujiza/screens/about.dart';
 import 'package:ujiza/screens/contact.dart';
 import 'package:ujiza/screens/localisation.dart';
 import 'package:ujiza/screens/pharmaciieAllList.dart';
 import 'package:ujiza/screens/private.dart';
 
-class AppMenu extends StatelessWidget {
+class AppMenu extends StatefulWidget {
+  @override
+  _AppMenuState createState() => _AppMenuState();
+}
+
+class _AppMenuState extends State<AppMenu> {
+  String qid = ''; // Initialisation de qid
+
+  @override
+  void initState() {
+    super.initState();
+    // Charger qid dès que le widget est créé
+    getqid();
+  }
+
+  // Fonction pour récupérer l'ID depuis les SharedPreferences
+  Future<void> getqid() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      qid = prefs.getString('qid') ?? ''; // Stocke l'ID dans l'état local
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -28,11 +52,20 @@ class AppMenu extends StatelessWidget {
             leading: Icon(Icons.local_pharmacy), // Pharmacie
             title: const Text('Pharmacie'),
             onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const PharmacieAllList()),
-              );
+              if (qid.isNotEmpty) {
+                // Vérifie si l'ID a été récupéré
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SearchPharmacieAll(id: qid),
+                  ),
+                );
+              } else {
+                // Si l'ID n'est pas encore récupéré, afficher un message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('ID non disponible pour l\'instant')),
+                );
+              }
             },
           ),
           ListTile(

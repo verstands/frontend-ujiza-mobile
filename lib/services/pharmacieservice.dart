@@ -39,6 +39,7 @@ Future<ApiResponse> getPharmacieLists() async {
 
 Future<ApiResponse> getPharmacieId(String id) async {
   ApiResponse apiResponse = ApiResponse();
+  print("oooooooooooooooooooooooooooooooo");
   try {
     final response = await http.get(
       Uri.parse('$getAllPharmacieQte/$id'),
@@ -67,5 +68,7 @@ Future<ApiResponse> getPharmacieId(String id) async {
   } catch (e) {
     apiResponse.erreur = serverError;
   }
+  print("oooooooooooooooooooooooooooooooo");
+
   return apiResponse;
 }

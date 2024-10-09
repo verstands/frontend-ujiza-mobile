@@ -1,58 +1,57 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-class Banniere extends StatefulWidget {
-  const Banniere({Key? key}) : super(key: key);
-
+class BannierePub extends StatefulWidget {
   @override
-  _BanniereState createState() => _BanniereState();
+  _BannierePubState createState() => _BannierePubState();
 }
 
-class _BanniereState extends State<Banniere> {
-  late BannerAd _bannerAd;
-  bool _isBannerAdReady = false;
-
-  void _createBannerAd() {
-    _bannerAd = BannerAd(
-      size: AdSize.mediumRectangle,
-      adUnitId: 'ca-app-pub-7094258963536106/8915605716',
-      request: AdRequest(),
-      listener: BannerAdListener(
-        onAdLoaded: (_) {
-          setState(() {
-            _isBannerAdReady = true;
-          });
-        },
-        onAdFailedToLoad: (ad, error) {
-          print('Banner ad failed to load: ${error.message}');
-          ad.dispose();
-        },
-      ),
-    );
-    _bannerAd.load();
-  }
+class _BannierePubState extends State<BannierePub> {
+  BannerAd? _bannerAd;
+  bool _isBannerAdLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _createBannerAd();
+    _loadBannerAd();
+  }
+
+  void _loadBannerAd() {
+    _bannerAd = BannerAd(
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+      size: AdSize.largeBanner,
+      request: AdRequest(),
+      listener: BannerAdListener(
+        onAdLoaded: (_) {
+          setState(() {
+            _isBannerAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          print('Banner Ad failed to load: $error');
+          ad.dispose();
+        },
+      ),
+    );
+    _bannerAd?.load();
   }
 
   @override
   void dispose() {
+    _bannerAd?.dispose();
     super.dispose();
-    _bannerAd.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return _isBannerAdReady
+    return _isBannerAdLoaded
         ? Container(
             alignment: Alignment.center,
-            child: AdWidget(ad: _bannerAd),
-            width: _bannerAd.size.width.toDouble(),
-            height: _bannerAd.size.height.toDouble(),
+            child: AdWidget(ad: _bannerAd!),
+            width: _bannerAd!.size.width.toDouble(),
+            height: _bannerAd!.size.height.toDouble(),
           )
-        : const SizedBox.shrink();
+        : SizedBox
+            .shrink(); // Affiche une taille nulle si la bannière n'est pas encore chargée
   }
 }

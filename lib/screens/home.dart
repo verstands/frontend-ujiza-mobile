@@ -1,7 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ujiza/models/QuartierModel.dart';
 import 'package:ujiza/models/produitPharModel.dart';
+import 'package:ujiza/screens/SearchPharcmacieAll.dart';
 import 'package:ujiza/screens/detailMedoc.dart';
+import 'package:ujiza/screens/pharmaciieAllList.dart';
 import 'package:ujiza/services/api_response.dart';
 import 'package:ujiza/services/produitservice.dart';
 import 'package:ujiza/utils/AdService.dart';
@@ -15,37 +22,86 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  bool isLoading = true; // Variable pour gérer l'état de chargement
+  String quartierInfo = ''; // Initialisation de quartierInfo
+  String qid = ''; // Initialisation de quartierInfo
+
   @override
   void initState() {
     super.initState();
-    // Initialiser les annonces dès que la page est chargée
-    AdService().initialize();
+    _loadSelectedQuarter();
   }
 
-  @override
-  void dispose() {
-    // Assurez-vous de libérer les ressources lorsque la page est détruite
-    AdService().dispose();
-    super.dispose();
+  // Fonction qui charge le quartier depuis SharedPreferences
+  Future<void> _loadSelectedQuarter() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? quartierJson = prefs.getString('quartier');
+
+    // Si les données sont présentes
+    if (quartierJson != null) {
+      Map<String, dynamic> quartierMap = jsonDecode(quartierJson);
+      QuartierModel quartier = QuartierModel(
+        id: quartierMap['id'],
+        nom: quartierMap['nom'],
+        commune: Commune(nom: quartierMap['communeNom']),
+      );
+
+      setState(() {
+        quartierInfo = '${quartier.nom}, ${quartier.commune?.nom}';
+        qid = '${quartier.id}';
+        isLoading = false; // Changer l'état une fois les données chargées
+      });
+    } else {
+      setState(() {
+        quartierInfo = 'Aucun quartier trouvé.';
+        isLoading = false; // Changer l'état si aucun quartier n'est trouvé
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: 'Home page',
+      appBar: AppBar(
+        backgroundColor: const Color.fromARGB(255, 0, 93, 76),
+        title: Text(
+          isLoading
+              ? 'Chargement...'
+              : quartierInfo, // Affichage de 'Chargement...' tant que les données ne sont pas disponibles
+          style: const TextStyle(
+            color: Colors.white,
+          ),
+        ),
+        iconTheme: const IconThemeData(
+          color: Colors.white,
+        ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SearchPharmacieAll(id: qid)),
+              );
+            },
+            icon: const Icon(Icons.shop_two),
+            iconSize: 40,
+            color: Colors.white,
+          ),
+        ],
       ),
       drawer: AppMenu(),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisAlignment:
+                MainAxisAlignment.center, // Centrer verticalement
+            crossAxisAlignment:
+                CrossAxisAlignment.center, // Centrer horizontalement
             children: [
-              // Ajouter la bannière ici
-              const Banniere(),
-
-              // Barre de recherche
+              BannierePub(),
+              Image.asset('assets/logo/ujizalogo.png'),
               TextField(
                 decoration: InputDecoration(
                   hintText: 'Rechercher produits...',
@@ -55,7 +111,7 @@ class _HomeState extends State<Home> {
                     borderRadius: BorderRadius.circular(30.0),
                     borderSide: BorderSide.none,
                   ),
-                  prefixIcon: Icon(
+                  prefixIcon: const Icon(
                     Icons.search,
                     color: Color.fromARGB(255, 0, 93, 76),
                   ),
@@ -139,132 +195,119 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
 
             // Liste des produits
             Expanded(
-              child: loading
-                  ? Center(child: CircularProgressIndicator())
-                  : ListView.builder(
-                      itemCount: suggestions.length,
-                      itemBuilder: (context, index) {
-                        final produit = suggestions[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => MedicamentDetailPage(
-                                    medicament: {
-                                      'id': produit.id!,
-                                      'nom': produit.nom!,
-                                      'dosage': produit.dosage!,
-                                      'prix': produit.prix!,
-                                      'description': produit.desciption!
-                                    },
-                                  ),
-                                ));
-                          },
-                          child: Column(
+              child: ListView.builder(
+                itemCount: suggestions.length,
+                itemBuilder: (context, index) {
+                  final produit = suggestions[index];
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MedicamentDetailPage(
+                              medicament: {
+                                'id': produit.id!,
+                                'nom': produit.nom!,
+                                'dosage': produit.dosage!,
+                                'prix': produit.prix!,
+                                'description': produit.desciption!
+                              },
+                            ),
+                          ));
+                    },
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // Icône à gauche (taille plus grande pour simuler une image)
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Row(
+                                padding: const EdgeInsets.only(right: 12.0),
+                                child: Icon(
+                                  Icons
+                                      .medical_services_outlined, // Icône pour les produits
+                                  color: Color.fromARGB(255, 0, 93, 76),
+                                  size:
+                                      50.0, // Taille plus grande pour ressembler à une vignette
+                                ),
+                              ),
+                              // Texte à droite
+                              Expanded(
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Icône à gauche (taille plus grande pour simuler une image)
-                                    Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 12.0),
-                                      child: Icon(
-                                        Icons
-                                            .medical_services_outlined, // Icône pour les produits
-                                        color: Color.fromARGB(255, 0, 93, 76),
-                                        size:
-                                            50.0, // Taille plus grande pour ressembler à une vignette
+                                    // Nom du produit (titre)
+                                    Text(
+                                      produit.nom ?? 'Sans nom',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16.0,
+                                        color: Colors.black87,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    // Texte à droite
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          // Nom du produit (titre)
-                                          Text(
-                                            produit.nom ?? 'Sans nom',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 16.0,
-                                              color: Colors.black87,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  4.0), // Espacement entre le titre et la description
-                                          // Description du produit (sous-titre)
-                                          Text(
-                                            produit.desciption != null
-                                                ? produit.desciption!.length >
-                                                        30
-                                                    ? produit.desciption!
-                                                            .substring(0, 30) +
-                                                        '...'
-                                                    : produit.desciption!
-                                                : 'Aucune description disponible',
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                                color: Colors.grey[600]),
-                                          ),
-                                          SizedBox(
-                                              height:
-                                                  6.0), // Espacement sous la description
-                                          // Ligne d'information additionnelle
-                                          Row(
-                                            children: [
-                                              Icon(
-                                                Icons.location_on,
-                                                size: 16.0,
-                                                color: Colors.grey[600],
-                                              ),
-                                              SizedBox(width: 4.0),
-                                              Text(
-                                                (produit.pharmacie?.commune !=
-                                                            null &&
-                                                        produit
-                                                            .pharmacie!
-                                                            .commune!
-                                                            .isNotEmpty)
-                                                    ? produit.pharmacie!.id!
-                                                    : 'Commune inconnue',
-                                                style: TextStyle(
-                                                    color: Colors.grey[600],
-                                                    fontSize: 13.0),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
+                                    SizedBox(
+                                        height:
+                                            4.0), // Espacement entre le titre et la description
+                                    // Description du produit (sous-titre)
+                                    Text(
+                                      produit.desciption != null
+                                          ? produit.desciption!.length > 30
+                                              ? produit.desciption!
+                                                      .substring(0, 30) +
+                                                  '...'
+                                              : produit.desciption!
+                                          : 'Aucune description disponible',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(color: Colors.grey[600]),
                                     ),
-                                    // Icône flèche à droite pour la navigation
-                                    Icon(
-                                      Icons.arrow_forward_ios,
-                                      size: 16.0,
-                                      color: Colors.grey[600],
+                                    SizedBox(height: 6.0),
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.location_on,
+                                          size: 16.0,
+                                          color: Colors.grey[600],
+                                        ),
+                                        SizedBox(width: 4.0),
+                                        Text(
+                                          (produit.pharmacie?.commune != null &&
+                                                  produit.pharmacie!.commune!
+                                                      .isNotEmpty)
+                                              ? produit.pharmacie!.id!
+                                              : 'Commune inconnue',
+                                          style: TextStyle(
+                                              color: Colors.grey[600],
+                                              fontSize: 13.0),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
                               ),
-                              // Ajouter un Divider ici pour la ligne horizontale
-                              Divider(
-                                color: Colors.grey[400], // Couleur de la ligne
-                                thickness: 1.0, // Épaisseur de la ligne
+                              // Icône flèche à droite pour la navigation
+                              Icon(
+                                Icons.arrow_forward_ios,
+                                size: 16.0,
+                                color: Colors.grey[600],
                               ),
                             ],
                           ),
-                        );
-                      },
+                        ),
+                        // Ajouter un Divider ici pour la ligne horizontale
+                        Divider(
+                          color: Colors.grey[400], // Couleur de la ligne
+                          thickness: 1.0, // Épaisseur de la ligne
+                        ),
+                      ],
                     ),
+                  );
+                },
+              ),
             ),
           ],
         ),

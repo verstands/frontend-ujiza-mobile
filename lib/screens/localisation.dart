@@ -1,10 +1,14 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ujiza/models/CommuneModel.dart';
 import 'package:ujiza/models/PaysModel.dart';
 import 'package:ujiza/models/QuartierModel.dart';
 import 'package:ujiza/models/VilleModel.dart';
 import 'package:ujiza/screens/SearchPharcmacieAll.dart';
+import 'package:ujiza/screens/home.dart';
 import 'package:ujiza/services/api_response.dart';
 import 'package:ujiza/services/communeservice.dart';
 import 'package:ujiza/services/paysservice.dart';
@@ -29,6 +33,7 @@ class _LocalisationPageState extends State<LocalisationPage> {
   List<VilleModel> cities = [];
   List<CommuneModel> communes = [];
   List<QuartierModel> quartier = [];
+  List<QuartierModel> quartierShared = [];
   bool loadingCountry = true;
   bool loadingCitie = true;
   bool loadingCommune = true;
@@ -41,6 +46,7 @@ class _LocalisationPageState extends State<LocalisationPage> {
       setState(() {
         countries = response.data as List<PaysModel>;
         loadingCountry = false;
+        print(countries);
       });
     } else {
       setState(() {
@@ -110,6 +116,19 @@ class _LocalisationPageState extends State<LocalisationPage> {
     EasyLoading.dismiss();
   }
 
+  Future<void> _saveSelectedQuarter(QuartierModel quartier) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    Map<String, dynamic> quartierMap = {
+      'id': quartier.id,
+      'nom': quartier.nom,
+      'communeNom': quartier.commune?.nom,
+    };
+    String quartierJson = jsonEncode(quartierMap);
+    await prefs.setString('quartier', quartierJson);
+    await prefs.setString('qid', quartier.id.toString());
+    print("Quartier enregistré dans SharedPreferences: ${quartier.nom}");
+  }
+
   @override
   void initState() {
     super.initState();
@@ -139,21 +158,18 @@ class _LocalisationPageState extends State<LocalisationPage> {
               items: countries.map((country) {
                 return DropdownMenuItem(
                   value: country.id,
-                  child: Text(country.nom ??
-                      'Nom non disponible'), // Vérifier si nom est nul
+                  child: Text(country.nom ?? 'Nom non disponible'),
                 );
               }).toList(),
               onChanged: (value) {
                 setState(() {
                   selectedCountry = value;
-                  selectedCity =
-                      null; // Reset city and commune when country changes
+                  selectedCity = null;
                   selectedCommune = null;
                   selectedQuarter = null;
 
                   if (value != null) {
-                    _fetchVille(
-                        value); // Appeler la fonction avec la valeur non nulle
+                    _fetchVille(value);
                   }
                 });
               },
@@ -169,19 +185,16 @@ class _LocalisationPageState extends State<LocalisationPage> {
                 items: cities.map((city) {
                   return DropdownMenuItem(
                     value: city.id,
-                    child: Text(city.nom ??
-                        'Nom non disponible'), // Vérifier si nom est nul
+                    child: Text(city.nom ?? 'Nom non disponible'),
                   );
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedCity = value;
-                    selectedCommune =
-                        null; // Reset commune and quarter when city changes
+                    selectedCommune = null;
                     selectedQuarter = null;
                     if (value != null) {
-                      _fetchCommune(
-                          value); // Appeler la fonction avec la valeur non nulle
+                      _fetchCommune(value);
                     }
                   });
                 },
@@ -237,20 +250,27 @@ class _LocalisationPageState extends State<LocalisationPage> {
               const SizedBox(height: 16),
             ],
             ElevatedButton(
-              onPressed: () {
-                // Action pour afficher les pharmacies selon la sélection
+              onPressed: () async {
                 if (selectedQuarter != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            SearchPharmacieAll(id: selectedQuarter!)),
+                  QuartierModel? quartierSelectionne = quartier.firstWhere(
+                    (q) => q.id == selectedQuarter,
+                    orElse: () => QuartierModel(id: '', nom: '', idCommune: ''),
                   );
+                  if (quartierSelectionne != null) {
+                    await _saveSelectedQuarter(quartierSelectionne);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Home(),
+                      ),
+                    );
+                  }
                 } else {
+                  // Si aucun quartier n'est sélectionné, afficher une alerte
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Veuillez sélectionner un quartier'),
-                      duration: Duration(seconds: 2), // Durée de l'affichage
+                      duration: Duration(seconds: 2),
                     ),
                   );
                 }
@@ -258,20 +278,19 @@ class _LocalisationPageState extends State<LocalisationPage> {
               child: const Text(
                 'Afficher les pharmacies',
                 style: TextStyle(
-                  fontSize: 16, // Taille du texte
-                  fontWeight: FontWeight.bold, // Gras
-                  color: Colors.white, // Couleur du texte
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    const Color.fromARGB(255, 0, 93, 76), // Couleur de fond
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 30, vertical: 12), // Espacement
+                backgroundColor: const Color.fromARGB(255, 0, 93, 76),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20), // Bordures arrondies
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                elevation: 5, // Ombre pour un effet de profondeur
+                elevation: 5,
               ),
             ),
           ],

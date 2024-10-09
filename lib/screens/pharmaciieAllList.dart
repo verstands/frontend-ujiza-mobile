@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ujiza/models/QuartierModel.dart';
 import 'package:ujiza/models/pharmacieModel.dart';
 import 'package:ujiza/screens/medicamentAll.dart';
 import 'package:ujiza/services/api_response.dart';
@@ -18,12 +22,40 @@ class _PharmacieAllListState extends State<PharmacieAllList> {
   bool loading = true;
 
   String searchQuery = '';
+  List<QuartierModel> quartierShared = [];
+  String qid = '';
+
+  void getqid() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    qid = prefs.getString('qid')!;
+  }
+
+  String quartierInfo = '';
+
+  Future<void> _loadSelectedQuarter() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? quartierJson = prefs.getString('quartier');
+    if (quartierJson != null) {
+      Map<String, dynamic> quartierMap = jsonDecode(quartierJson);
+      QuartierModel quartier = QuartierModel(
+        id: quartierMap['id'],
+        nom: quartierMap['nom'],
+        commune: Commune(nom: quartierMap['communeNom']),
+      );
+      setState(() {
+        quartierInfo = quartier.id.toString();
+      });
+    } else {
+      setState(() {
+        quartierInfo = 'Aucun quartier trouvé.';
+      });
+    }
+  }
 
   Future<void> _fetchPharmacies() async {
-    // Afficher le spinner avant le chargement
     EasyLoading.show(status: 'Chargement des pharmacies...');
 
-    ApiResponse response = await getPharmacieLists();
+    ApiResponse response = await getPharmacieId(qid);
     if (response.erreur == null) {
       setState(() {
         pharmacies = response.data as List<pharmacieModel>;
@@ -37,8 +69,6 @@ class _PharmacieAllListState extends State<PharmacieAllList> {
         SnackBar(content: Text('${response.erreur}')),
       );
     }
-
-    // Masquer le spinner après la récupération des données
     EasyLoading.dismiss();
   }
 
@@ -46,6 +76,8 @@ class _PharmacieAllListState extends State<PharmacieAllList> {
   void initState() {
     super.initState();
     _fetchPharmacies();
+    _loadSelectedQuarter();
+    getqid();
   }
 
   @override
@@ -81,6 +113,13 @@ class _PharmacieAllListState extends State<PharmacieAllList> {
                 prefixIcon: const Icon(Icons.search,
                     color: Color.fromARGB(255, 0, 93, 76)),
               ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              'Quartier sélectionné: $qid',
+              style: TextStyle(fontSize: 16),
             ),
           ),
           Expanded(
