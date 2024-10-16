@@ -14,6 +14,7 @@ import 'package:ujiza/services/produitservice.dart';
 import 'package:ujiza/utils/AdService.dart';
 import 'package:ujiza/utils/MeuApp.dart';
 import 'package:ujiza/utils/banniere.dart';
+import 'package:ujiza/utils/carousel.dart';
 import 'package:ujiza/utils/customAppBar.dart';
 
 class Home extends StatefulWidget {
@@ -22,9 +23,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  bool isLoading = true; // Variable pour gérer l'état de chargement
-  String quartierInfo = ''; // Initialisation de quartierInfo
-  String qid = ''; // Initialisation de quartierInfo
+  bool isLoading = true;
+  String quartierInfo = '';
+  String qid = '';
 
   @override
   void initState() {
@@ -49,12 +50,12 @@ class _HomeState extends State<Home> {
       setState(() {
         quartierInfo = '${quartier.nom}, ${quartier.commune?.nom}';
         qid = '${quartier.id}';
-        isLoading = false; // Changer l'état une fois les données chargées
+        isLoading = false;
       });
     } else {
       setState(() {
         quartierInfo = 'Aucun quartier trouvé.';
-        isLoading = false; // Changer l'état si aucun quartier n'est trouvé
+        isLoading = false;
       });
     }
   }
@@ -65,9 +66,7 @@ class _HomeState extends State<Home> {
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 0, 93, 76),
         title: Text(
-          isLoading
-              ? 'Chargement...'
-              : quartierInfo, // Affichage de 'Chargement...' tant que les données ne sont pas disponibles
+          isLoading ? 'Chargement...' : quartierInfo,
           style: const TextStyle(
             color: Colors.white,
           ),
@@ -91,39 +90,54 @@ class _HomeState extends State<Home> {
         ],
       ),
       drawer: AppMenu(),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
           child: Column(
-            mainAxisAlignment:
-                MainAxisAlignment.center, // Centrer verticalement
-            crossAxisAlignment:
-                CrossAxisAlignment.center, // Centrer horizontalement
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              BannierePub(),
-              Image.asset('assets/logo/ujizalogo.png'),
-              TextField(
-                decoration: InputDecoration(
-                  hintText: 'Rechercher produits...',
-                  filled: true,
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  prefixIcon: const Icon(
-                    Icons.search,
-                    color: Color.fromARGB(255, 0, 93, 76),
-                  ),
-                ),
-                onTap: () {
-                  // Naviguer vers la page de suggestions
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => SuggestionsPage()),
-                  );
-                },
+              const CarouselPage(),
+              const SizedBox(
+                height: 15,
               ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset('assets/logo/ujizalogo.png'),
+                    const SizedBox(
+                      height: 5,
+                    ),
+                    TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Rechercher produits...',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30.0),
+                          borderSide: BorderSide.none,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search,
+                          color: Color.fromARGB(255, 0, 93, 76),
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SuggestionsPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 35,
+              ),
+              BannierePub(),
             ],
           ),
         ),

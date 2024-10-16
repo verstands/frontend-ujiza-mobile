@@ -7,6 +7,7 @@ const getAllCommuneByVille = '$baseURL/commune/ville';
 const getAllQuartierByCommune = '$baseURL/quartier/commune';
 const getAllPharmacieQte = '$baseURL/pharmacie/qt';
 const getAllproductList = '$baseURL/produit';
+const PostSignIn = '$baseURL/auth/login';
 
 const serverError = "Aucune connexion";
 const unauthorized = "Erreur de la base des données ";

@@ -54,9 +54,7 @@ class _MyPageState extends State<MyPage> {
   void _navigateToSearchPharmacie() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-          builder: (context) => SearchPharmacieAll(
-              id: 'qid')), // Remplace 'qid' par ta variable id
+      MaterialPageRoute(builder: (context) => SearchPharmacieAll(id: 'qid')),
     );
   }
 
@@ -64,7 +62,7 @@ class _MyPageState extends State<MyPage> {
     if (_isInterstitialAdReady) {
       _interstitialAd?.show();
     } else {
-      _navigateToSearchPharmacie(); // Si l'annonce n'est pas prête, on navigue directement
+      _navigateToSearchPharmacie();
     }
   }
 

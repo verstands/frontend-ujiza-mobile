@@ -93,7 +93,6 @@ class _PharmacieAllListState extends State<PharmacieAllList> {
       appBar: const CustomAppBar(title: "Pharmacies"),
       body: Column(
         children: [
-          // Barre de recherche
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(

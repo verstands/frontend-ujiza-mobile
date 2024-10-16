@@ -18,8 +18,8 @@ class _BannierePubState extends State<BannierePub> {
 
   void _loadBannerAd() {
     _bannerAd = BannerAd(
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
-      size: AdSize.largeBanner,
+      adUnitId: 'ca-app-pub-3442888419736051/5549826338',
+      size: AdSize.mediumRectangle,
       request: AdRequest(),
       listener: BannerAdListener(
         onAdLoaded: (_) {

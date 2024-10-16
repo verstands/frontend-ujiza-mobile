@@ -5,6 +5,7 @@ import 'package:ujiza/models/pharmacieModel.dart';
 import 'package:ujiza/screens/medicamentAll.dart';
 import 'package:ujiza/services/api_response.dart';
 import 'package:ujiza/services/pharmacieservice.dart';
+import 'package:ujiza/utils/app_open_ad.dart';
 import 'package:ujiza/utils/customAppBar.dart';
 
 class SearchPharmacieAll extends StatefulWidget {
@@ -19,6 +20,7 @@ class SearchPharmacieAll extends StatefulWidget {
 class _SearchPharmacieAllState extends State<SearchPharmacieAll> {
   List<pharmacieModel> pharmacies = [];
   bool loading = true;
+  final AppOpenAdManager _appOpenAdManager = AppOpenAdManager();
 
   String searchQuery = '';
 
@@ -39,8 +41,6 @@ class _SearchPharmacieAllState extends State<SearchPharmacieAll> {
         SnackBar(content: Text('${response.erreur}')),
       );
     }
-
-    // Masquer le spinner après la récupération des données
     EasyLoading.dismiss();
   }
 
@@ -48,6 +48,13 @@ class _SearchPharmacieAllState extends State<SearchPharmacieAll> {
   void initState() {
     super.initState();
     _fetchPharmacies();
+    _appOpenAdManager.loadAd();
+  }
+
+  @override
+  void dispose() {
+    _appOpenAdManager.dispose();
+    super.dispose();
   }
 
   @override

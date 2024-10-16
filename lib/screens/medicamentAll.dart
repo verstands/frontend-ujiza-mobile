@@ -124,7 +124,10 @@ class _MedicamentsPageState extends State<MedicamentsPage> {
                                 'nom': medicament.nom!,
                                 'dosage': medicament.dosage!,
                                 'prix': medicament.prix!,
-                                'description': medicament.desciption!
+                                'description': medicament.desciption!,
+                                'pharmacie': medicament.pharmacie!.nom!,
+                                'commune': medicament.pharmacie!.commune!,
+                                'telephone': medicament.pharmacie!.telephone!,
                               },
                             ),
                           ));

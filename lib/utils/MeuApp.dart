@@ -3,9 +3,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ujiza/screens/SearchPharcmacieAll.dart';
 import 'package:ujiza/screens/about.dart';
 import 'package:ujiza/screens/contact.dart';
+import 'package:ujiza/screens/detailmypharmacie.dart';
 import 'package:ujiza/screens/localisation.dart';
+import 'package:ujiza/screens/login.dart';
+import 'package:ujiza/screens/mymedicament.dart';
+import 'package:ujiza/screens/myprofile.dart';
 import 'package:ujiza/screens/pharmaciieAllList.dart';
 import 'package:ujiza/screens/private.dart';
+import 'package:ujiza/screens/registrer.dart';
 
 class AppMenu extends StatefulWidget {
   @override
@@ -13,20 +18,39 @@ class AppMenu extends StatefulWidget {
 }
 
 class _AppMenuState extends State<AppMenu> {
-  String qid = ''; // Initialisation de qid
+  String token = '';
+  String qid = '';
 
   @override
   void initState() {
     super.initState();
-    // Charger qid dès que le widget est créé
+    getToken();
     getqid();
   }
 
-  // Fonction pour récupérer l'ID depuis les SharedPreferences
+  Future<void> getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      token = prefs.getString('token') ?? '';
+    });
+  }
+
+  Future<void> logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('token');
+    setState(() {
+      token = '';
+      qid = '';
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Déconnecté avec succès')),
+    );
+  }
+
   Future<void> getqid() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      qid = prefs.getString('qid') ?? ''; // Stocke l'ID dans l'état local
+      qid = prefs.getString('qid') ?? '';
     });
   }
 
@@ -48,71 +72,149 @@ class _AppMenuState extends State<AppMenu> {
               ),
             ),
           ),
-          ListTile(
-            leading: Icon(Icons.local_pharmacy), // Pharmacie
-            title: const Text('Pharmacie'),
-            onTap: () {
-              if (qid.isNotEmpty) {
-                // Vérifie si l'ID a été récupéré
+
+          // Si le token est vide, afficher ces options
+          if (token.isEmpty) ...[
+            ListTile(
+              leading: Icon(Icons.local_pharmacy),
+              title: const Text('Pharmacie'),
+              onTap: () {
+                if (qid.isNotEmpty) {
+                  // Vérifie si l'ID a été récupéré
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SearchPharmacieAll(id: qid),
+                    ),
+                  );
+                } else {
+                  // Si l'ID n'est pas encore récupéré, afficher un message
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                        content: Text('ID non disponible pour l\'instant')),
+                  );
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.contacts),
+              title: const Text('Nos contacts'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ContactsPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text('Localisation'),
+              onTap: () {
+                Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => SearchPharmacieAll(id: qid),
-                  ),
+                      builder: (context) => const LocalisationPage()),
                 );
-              } else {
-                // Si l'ID n'est pas encore récupéré, afficher un message
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('ID non disponible pour l\'instant')),
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.info_outline),
+              title: Text('À propos'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AboutPage()),
                 );
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.contacts), // Icône pour Nos contacts
-            title: const Text('Nos contacts'),
-            onTap: () {
-              Navigator.pop(context); // Fermer le menu
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        const ContactsPage()), // Redirection vers la page Nos contacts
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.location_on), // Icône pour Localisation
-            title: const Text('Localisation'),
-            onTap: () {
-              Navigator.pop(context); // Fermer le menu
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => const LocalisationPage()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.info_outline), // A propos
-            title: Text('À propos'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AboutPage()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.privacy_tip), // Confidentialité
-            title: Text('Confidentialité'),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PrivacyPage()),
-              );
-            },
-          ),
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.privacy_tip),
+              title: Text('Confidentialité'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const PrivacyPage()),
+                );
+              },
+            ),
+            ListTile(
+              title: const Text('Pharmacie',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            const Divider(),
+            ListTile(
+              leading: Icon(Icons.login),
+              title: const Text('Se connecter'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.app_registration),
+              title: const Text('S\'inscrire'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SignupPage()),
+                );
+              },
+            ),
+          ] else ...[
+            ListTile(
+              leading: Icon(Icons.local_pharmacy), // Icône pour Pharmacie
+              title: const Text('Pharmacie'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const DetailMypharmacie()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.shopping_cart),
+              title: const Text('Produits'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Mymedicament()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.person),
+              title: const Text('Profil'),
+              onTap: () {
+                // Action pour Profil
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Myprofile()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: const Text('Se déconnecter'),
+              onTap: () {
+                logout();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const LocalisationPage()),
+                );
+              },
+            ),
+          ]
         ],
       ),
     );

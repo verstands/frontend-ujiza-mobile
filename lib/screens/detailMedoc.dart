@@ -1,15 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:ujiza/utils/app_open_ad.dart';
 import 'package:ujiza/utils/customAppBar.dart';
 
-class MedicamentDetailPage extends StatelessWidget {
+class MedicamentDetailPage extends StatefulWidget {
   final Map<String, String> medicament;
 
   const MedicamentDetailPage({super.key, required this.medicament});
 
   @override
+  _MedicamentDetailPageState createState() => _MedicamentDetailPageState();
+}
+
+class _MedicamentDetailPageState extends State<MedicamentDetailPage> {
+  late final AppOpenAdManager _appOpenAdManager;
+
+  @override
+  void initState() {
+    super.initState();
+    _appOpenAdManager = AppOpenAdManager();
+    _appOpenAdManager.loadAd();
+  }
+
+  @override
+  void dispose() {
+    _appOpenAdManager.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Détails du ${medicament['nom']}'),
+      appBar: CustomAppBar(title: 'Détails du ${widget.medicament['nom']}'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Card(
@@ -32,12 +53,14 @@ class MedicamentDetailPage extends StatelessWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(
-                        medicament['nom']!,
+                        widget.medicament['nom']!,
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.green,
                         ),
+                        overflow: TextOverflow
+                            .ellipsis, // Ajoute une ellipsis si le texte est trop long
                       ),
                     ),
                   ],
@@ -47,9 +70,13 @@ class MedicamentDetailPage extends StatelessWidget {
                   children: [
                     const Icon(Icons.local_pharmacy, color: Colors.green),
                     const SizedBox(width: 10),
-                    Text(
-                      'Dosage : ${medicament['dosage']}mg',
-                      style: const TextStyle(fontSize: 18),
+                    Expanded(
+                      // Assure que le texte s'adapte à la largeur disponible
+                      child: Text(
+                        'Dosage : ${widget.medicament['dosage']}mg',
+                        style: const TextStyle(fontSize: 18),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -58,12 +85,15 @@ class MedicamentDetailPage extends StatelessWidget {
                   children: [
                     const Icon(Icons.attach_money, color: Colors.green),
                     const SizedBox(width: 10),
-                    Text(
-                      'Prix : ${medicament['prix']} CDF',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Text(
+                        'Prix : ${widget.medicament['prix']} CDF',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -76,8 +106,48 @@ class MedicamentDetailPage extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Description : ${medicament['description']}',
+                        'Description : ${widget.medicament['description']}',
                         style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    const Icon(Icons.store, color: Colors.green),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Pharmacie : ${widget.medicament['pharmacie']}',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Icon(Icons.location_city, color: Colors.green),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Commune : ${widget.medicament['commune']}',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Icon(Icons.phone, color: Colors.green),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Téléphone : ${widget.medicament['telephone']}',
+                        style: const TextStyle(fontSize: 18),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
