@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ujiza/utils/customAppBar.dart';
+import 'package:medigo/utils/customAppBar.dart';
 
 class ContactsPage extends StatelessWidget {
   const ContactsPage({super.key});

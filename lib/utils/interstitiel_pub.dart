@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:ujiza/screens/SearchPharcmacieAll.dart';
+import 'package:medigo/screens/SearchPharcmacieAll.dart';
 
 class MyPage extends StatefulWidget {
   @override

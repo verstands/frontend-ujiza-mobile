@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:ujiza/models/produitPharModel.dart';
-import 'package:ujiza/screens/detailMedoc.dart';
-import 'package:ujiza/services/api_response.dart';
-import 'package:ujiza/services/produitservice.dart';
-import 'package:ujiza/utils/customAppBar.dart';
+import 'package:medigo/models/produitPharModel.dart';
+import 'package:medigo/screens/detailMedoc.dart';
+import 'package:medigo/services/api_response.dart';
+import 'package:medigo/services/produitservice.dart';
+import 'package:medigo/utils/customAppBar.dart';
 
 class MedicamentsPage extends StatefulWidget {
   final String nomPharmacie;
@@ -123,11 +123,11 @@ class _MedicamentsPageState extends State<MedicamentsPage> {
                                 'id': medicament.id!,
                                 'nom': medicament.nom!,
                                 'dosage': medicament.dosage!,
-                                'prix': medicament.prix!,
-                                'description': medicament.desciption!,
+                                'prix': medicament.prix.toString()!,
+                                'description': medicament.description!,
                                 'pharmacie': medicament.pharmacie!.nom!,
                                 'commune': medicament.pharmacie!.commune!,
-                                'telephone': medicament.pharmacie!.telephone!,
+                                'telephone': medicament.pharmacie!.image!,
                               },
                             ),
                           ));

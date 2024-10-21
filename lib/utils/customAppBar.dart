@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ujiza/screens/pharmaciieAllList.dart';
+import 'package:medigo/screens/pharmaciieAllList.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;

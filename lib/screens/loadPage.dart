@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ujiza/screens/home.dart';
-import 'package:ujiza/screens/localisation.dart';
-import 'package:ujiza/screens/mypharmacie.dart';
+import 'package:medigo/screens/home.dart';
+import 'package:medigo/screens/localisation.dart';
+import 'package:medigo/screens/mypharmacie.dart';
 
 class LoadPage extends StatefulWidget {
   const LoadPage({super.key});
@@ -61,7 +61,7 @@ class _LoadPageState extends State<LoadPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 child: const Image(
-                  image: AssetImage('assets/logo/a.jpeg'),
+                  image: AssetImage('assets/logo/logomedigo.png'),
                 ),
               ),
               const SizedBox(height: 20), // Espacement

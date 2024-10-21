@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ujiza/models/QuartierModel.dart';
-import 'package:ujiza/models/produitPharModel.dart';
-import 'package:ujiza/screens/SearchPharcmacieAll.dart';
-import 'package:ujiza/screens/detailMedoc.dart';
-import 'package:ujiza/screens/pharmaciieAllList.dart';
-import 'package:ujiza/services/api_response.dart';
-import 'package:ujiza/services/produitservice.dart';
-import 'package:ujiza/utils/AdService.dart';
-import 'package:ujiza/utils/MeuApp.dart';
-import 'package:ujiza/utils/banniere.dart';
-import 'package:ujiza/utils/carousel.dart';
-import 'package:ujiza/utils/customAppBar.dart';
+import 'package:medigo/models/QuartierModel.dart';
+import 'package:medigo/models/produitPharModel.dart';
+import 'package:medigo/screens/SearchPharcmacieAll.dart';
+import 'package:medigo/screens/detailMedoc.dart';
+import 'package:medigo/screens/pharmaciieAllList.dart';
+import 'package:medigo/services/api_response.dart';
+import 'package:medigo/services/produitservice.dart';
+import 'package:medigo/utils/AdService.dart';
+import 'package:medigo/utils/MeuApp.dart';
+import 'package:medigo/utils/banniere.dart';
+import 'package:medigo/utils/carousel.dart';
+import 'package:medigo/utils/customAppBar.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -33,12 +33,9 @@ class _HomeState extends State<Home> {
     _loadSelectedQuarter();
   }
 
-  // Fonction qui charge le quartier depuis SharedPreferences
   Future<void> _loadSelectedQuarter() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? quartierJson = prefs.getString('quartier');
-
-    // Si les données sont présentes
     if (quartierJson != null) {
       Map<String, dynamic> quartierMap = jsonDecode(quartierJson);
       QuartierModel quartier = QuartierModel(
@@ -104,7 +101,7 @@ class _HomeState extends State<Home> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset('assets/logo/ujizalogo.png'),
+                    Image.asset('assets/logo/medigoacceuil.png'),
                     const SizedBox(
                       height: 5,
                     ),
@@ -189,7 +186,6 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Barre de recherche
             TextField(
               decoration: InputDecoration(
                 hintText: 'Rechercher produits',
@@ -206,8 +202,6 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
               ),
             ),
             const SizedBox(height: 16.0),
-
-            // Liste des produits
             Expanded(
               child: ListView.builder(
                 itemCount: suggestions.length,
@@ -223,8 +217,8 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                                 'id': produit.id!,
                                 'nom': produit.nom!,
                                 'dosage': produit.dosage!,
-                                'prix': produit.prix!,
-                                'description': produit.desciption!
+                                'prix': produit.prix.toString(),
+                                'description': produit.description!
                               },
                             ),
                           ));
@@ -236,23 +230,18 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Icône à gauche (taille plus grande pour simuler une image)
                               Padding(
                                 padding: const EdgeInsets.only(right: 12.0),
                                 child: Icon(
-                                  Icons
-                                      .medical_services_outlined, // Icône pour les produits
+                                  Icons.medical_services_outlined,
                                   color: Color.fromARGB(255, 0, 93, 76),
-                                  size:
-                                      50.0, // Taille plus grande pour ressembler à une vignette
+                                  size: 50.0,
                                 ),
                               ),
-                              // Texte à droite
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Nom du produit (titre)
                                     Text(
                                       produit.nom ?? 'Sans nom',
                                       style: TextStyle(
@@ -263,17 +252,14 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    SizedBox(
-                                        height:
-                                            4.0), // Espacement entre le titre et la description
-                                    // Description du produit (sous-titre)
+                                    SizedBox(height: 4.0),
                                     Text(
-                                      produit.desciption != null
-                                          ? produit.desciption!.length > 30
-                                              ? produit.desciption!
+                                      produit.description != null
+                                          ? produit.description!.length > 30
+                                              ? produit.description!
                                                       .substring(0, 30) +
                                                   '...'
-                                              : produit.desciption!
+                                              : produit.description!
                                           : 'Aucune description disponible',
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
@@ -303,7 +289,6 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                                   ],
                                 ),
                               ),
-                              // Icône flèche à droite pour la navigation
                               Icon(
                                 Icons.arrow_forward_ios,
                                 size: 16.0,
@@ -312,10 +297,9 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
                             ],
                           ),
                         ),
-                        // Ajouter un Divider ici pour la ligne horizontale
                         Divider(
-                          color: Colors.grey[400], // Couleur de la ligne
-                          thickness: 1.0, // Épaisseur de la ligne
+                          color: Colors.grey[400],
+                          thickness: 1.0,
                         ),
                       ],
                     ),

@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'package:ujiza/constant.dart';
-import 'package:ujiza/models/CommuneModel.dart';
-import 'package:ujiza/models/QuartierModel.dart';
-import 'package:ujiza/services/api_response.dart';
+import 'package:medigo/constant.dart';
+import 'package:medigo/models/CommuneModel.dart';
+import 'package:medigo/models/QuartierModel.dart';
+import 'package:medigo/services/api_response.dart';
 import 'package:http/http.dart' as http;
 
 Future<ApiResponse> getQuartierCommune(String id) async {

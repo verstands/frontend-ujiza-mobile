@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ujiza/screens/SearchPharcmacieAll.dart';
-import 'package:ujiza/screens/about.dart';
-import 'package:ujiza/screens/contact.dart';
-import 'package:ujiza/screens/detailmypharmacie.dart';
-import 'package:ujiza/screens/localisation.dart';
-import 'package:ujiza/screens/login.dart';
-import 'package:ujiza/screens/mymedicament.dart';
-import 'package:ujiza/screens/myprofile.dart';
-import 'package:ujiza/screens/pharmaciieAllList.dart';
-import 'package:ujiza/screens/private.dart';
-import 'package:ujiza/screens/registrer.dart';
+import 'package:medigo/screens/SearchPharcmacieAll.dart';
+import 'package:medigo/screens/about.dart';
+import 'package:medigo/screens/contact.dart';
+import 'package:medigo/screens/detailmypharmacie.dart';
+import 'package:medigo/screens/localisation.dart';
+import 'package:medigo/screens/login.dart';
+import 'package:medigo/screens/mymedicament.dart';
+import 'package:medigo/screens/mypharmacie.dart';
+import 'package:medigo/screens/myprofile.dart';
+import 'package:medigo/screens/pharmaciieAllList.dart';
+import 'package:medigo/screens/private.dart';
+import 'package:medigo/screens/registrer.dart';
 
 class AppMenu extends StatefulWidget {
   @override
@@ -167,6 +168,17 @@ class _AppMenuState extends State<AppMenu> {
               },
             ),
           ] else ...[
+            ListTile(
+              leading: Icon(Icons.home), // Icône pour Pharmacie
+              title: const Text('Tableau de bord'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const MyPharmacie()),
+                );
+              },
+            ),
             ListTile(
               leading: Icon(Icons.local_pharmacy), // Icône pour Pharmacie
               title: const Text('Pharmacie'),

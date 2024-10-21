@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ujiza/utils/app_open_ad.dart';
-import 'package:ujiza/utils/customAppBar.dart';
+import 'package:medigo/utils/app_open_ad.dart';
+import 'package:medigo/utils/customAppBar.dart';
 
 class MedicamentDetailPage extends StatefulWidget {
   final Map<String, String> medicament;
@@ -59,8 +59,7 @@ class _MedicamentDetailPageState extends State<MedicamentDetailPage> {
                           fontWeight: FontWeight.bold,
                           color: Colors.green,
                         ),
-                        overflow: TextOverflow
-                            .ellipsis, // Ajoute une ellipsis si le texte est trop long
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -71,7 +70,6 @@ class _MedicamentDetailPageState extends State<MedicamentDetailPage> {
                     const Icon(Icons.local_pharmacy, color: Colors.green),
                     const SizedBox(width: 10),
                     Expanded(
-                      // Assure que le texte s'adapte à la largeur disponible
                       child: Text(
                         'Dosage : ${widget.medicament['dosage']}mg',
                         style: const TextStyle(fontSize: 18),

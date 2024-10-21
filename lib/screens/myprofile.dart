@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:medigo/utils/MeuApp.dart';
 
 class Myprofile extends StatefulWidget {
   const Myprofile({super.key});
@@ -8,12 +10,65 @@ class Myprofile extends StatefulWidget {
 }
 
 class _MyprofileState extends State<Myprofile> {
-  // Informations par défaut pour le profil
-  String nom = "Rabby Kikwele";
+  @override
+  void initState() {
+    super.initState();
+    getNom();
+    getPrenom();
+    getEmail();
+    getTelephone();
+  }
+
+  String? nom;
+  String? prenom;
+  String? email;
   String adresse = "456 Rue de la Liberté, Kinshasa";
-  String telephone = "+243 987 654 321";
-  String email = "rabbykikwele@example.com";
+  String? telephone;
   String photoUrl = "https://via.placeholder.com/150";
+
+  Future<void> getNom() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? agentToken = prefs.getString('agent_nom');
+
+    if (agentToken != null) {
+      setState(() {
+        nom = agentToken;
+      });
+    }
+  }
+
+  Future<void> getPrenom() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? agentToken = prefs.getString('agent_prenom');
+
+    if (agentToken != null) {
+      setState(() {
+        prenom = agentToken;
+      });
+    }
+  }
+
+  Future<void> getEmail() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? agentToken = prefs.getString('agent_email');
+
+    if (agentToken != null) {
+      setState(() {
+        email = agentToken;
+      });
+    }
+  }
+
+  Future<void> getTelephone() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? agentToken = prefs.getString('agent_telephone');
+
+    if (agentToken != null) {
+      setState(() {
+        telephone = agentToken;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +80,7 @@ class _MyprofileState extends State<Myprofile> {
         ),
         backgroundColor: const Color.fromARGB(255, 0, 93, 76),
       ),
+      drawer: AppMenu(),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -33,12 +89,17 @@ class _MyprofileState extends State<Myprofile> {
             Center(
               child: CircleAvatar(
                 radius: 60,
-                backgroundImage: NetworkImage(photoUrl),
+                backgroundColor: Colors.grey.shade300,
+                child: const Icon(
+                  Icons.person,
+                  size: 60,
+                  color: Colors.white,
+                ),
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              nom,
+              '$prenom  $nom',
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -47,7 +108,7 @@ class _MyprofileState extends State<Myprofile> {
             ),
             const SizedBox(height: 8),
             Text(
-              email,
+              '$email',
               style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 16),
@@ -83,7 +144,7 @@ class _MyprofileState extends State<Myprofile> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(telephone, style: const TextStyle(fontSize: 16)),
+                    Text(telephone!, style: const TextStyle(fontSize: 16)),
                   ],
                 ),
               ),

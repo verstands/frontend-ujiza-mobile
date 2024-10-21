@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ujiza/constant.dart';
-import 'package:ujiza/models/VilleModel.dart';
-import 'package:ujiza/services/api_response.dart';
+import 'package:medigo/constant.dart';
+import 'package:medigo/models/RegistreModel.dart';
+import 'package:medigo/models/VilleModel.dart';
+import 'package:medigo/services/api_response.dart';
 import 'package:http/http.dart' as http;
 
-Future<ApiResponse> SignInService(String email, String password) async {
-  ApiResponse apiResponse = ApiResponse();
+Future<ApiResponse<Map<String, dynamic>>> SignInService(
+    String email, String password) async {
+  ApiResponse<Map<String, dynamic>> apiResponse = ApiResponse();
   try {
     final response = await http.post(
       Uri.parse(PostSignIn),
@@ -16,12 +18,64 @@ Future<ApiResponse> SignInService(String email, String password) async {
 
     switch (response.statusCode) {
       case 201:
-        SharedPreferences pref = await SharedPreferences.getInstance();
-        String token = jsonDecode(response.body)['access_token'] ?? '';
-        pref.setString('token', token);
-        Map<String, dynamic> agent = jsonDecode(response.body)['agent'] ?? {};
-        pref.setString('agent', jsonEncode(agent));
-        await pref.commit();
+        final responseData = jsonDecode(response.body);
+        apiResponse.data = {
+          'token': responseData['access_token'],
+          'agent_id': responseData['agent']['id'],
+          'agent_nom': responseData['agent']['nom'],
+          'agent_prenom': responseData['agent']['prenom'],
+          'agent_telephone': responseData['agent']['telephone'],
+          'agent_email': responseData['agent']['email'],
+        };
+        break;
+      case 400:
+        final errors = jsonDecode(response.body)['message'];
+        apiResponse.erreur = errors is List
+            ? errors.join("\n")
+            : "Une erreur inattendue est survenue";
+        break;
+      case 401:
+        apiResponse.erreur =
+            "Non autorisé : veuillez vérifier vos informations d'identification.";
+        break;
+      case 409:
+        final conflictError = jsonDecode(response.body)['message'];
+        apiResponse.erreur =
+            conflictError is String ? conflictError : "Conflit détecté";
+        break;
+      default:
+        apiResponse.erreur =
+            "Une erreur s'est produite, veuillez réessayer plus tard.";
+        break;
+    }
+  } catch (e) {
+    apiResponse.erreur =
+        "Erreur du serveur : impossible de contacter le serveur.";
+  }
+  return apiResponse;
+}
+
+Future<ApiResponse> RegistreService(String email, String password, String nom,
+    String prenom, String telephone) async {
+  ApiResponse apiResponse = ApiResponse();
+  try {
+    final response = await http.post(
+      Uri.parse(PostSignUp),
+      headers: {'Accept': 'application/json'},
+      body: {
+        'email': email,
+        'mdp': password,
+        'prenom': prenom,
+        "nom": nom,
+        "telephone": telephone,
+        "id_fonction": "a",
+        "statut": "1"
+      },
+    );
+
+    switch (response.statusCode) {
+      case 201:
+        Map<String, dynamic> agent = jsonDecode(response.body) ?? {};
         break;
       case 400:
         final errors = jsonDecode(response.body)['message'];

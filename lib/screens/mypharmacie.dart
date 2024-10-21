@@ -1,7 +1,19 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:ujiza/screens/mymedicament.dart';
-import 'package:ujiza/utils/MeuApp.dart';
-import 'package:ujiza/utils/customAppBar.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:medigo/models/RegistreModel.dart';
+import 'package:medigo/models/countModel.dart';
+import 'package:medigo/models/pharmacieModel.dart';
+import 'package:medigo/models/produitPharModel.dart';
+import 'package:medigo/screens/addmymedicament.dart';
+import 'package:medigo/screens/mymedicament.dart';
+import 'package:medigo/services/api_response.dart';
+import 'package:medigo/services/pharmacieservice.dart';
+import 'package:medigo/services/produitservice.dart';
+import 'package:medigo/utils/MeuApp.dart';
+import 'package:medigo/utils/customAppBar.dart';
 
 class MyPharmacie extends StatefulWidget {
   const MyPharmacie({super.key});
@@ -11,21 +23,122 @@ class MyPharmacie extends StatefulWidget {
 }
 
 class _MyPharmacieState extends State<MyPharmacie> {
-  int totalMedications = 150; // Nombre total de médicaments
-  double totalPrice = 1200.0; // Prix total des médicaments
-  List<Medication> medications = []; // Liste de médicaments
+  int totalMedications = 0;
+  int totalPrice = 0;
+  List<Medication> medications = [];
+  pharmacieModel? pharmacie;
+  bool loading = true;
+  String? id;
 
   @override
   void initState() {
     super.initState();
-    // Exemple de données de médicaments
-    medications = [
-      Medication(name: "Paracétamol", quantity: 30, price: 5.0),
-      Medication(name: "Ibuprofène", quantity: 20, price: 7.5),
-      Medication(name: "Aspirine", quantity: 50, price: 3.0),
-      Medication(name: "Antihistaminique", quantity: 10, price: 12.0),
-      Medication(name: "Amoxicilline", quantity: 15, price: 10.0),
-    ];
+    _fetchCount();
+    _fetchSomme();
+    getUser();
+    _fetchpharmacie();
+  }
+
+  void getUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? agentString = prefs.getString('agent_id');
+
+    if (agentString != null) {
+      setState(() {
+        id = agentString;
+      });
+      _fetchCount();
+      _fetchpharmacie();
+      _fetchSomme();
+    }
+  }
+
+  @override
+  Future<void> _fetchCount() async {
+    if (id != null && id != null) {
+      ApiResponse response = await getCountmedicament(id!);
+
+      if (response.erreur == null) {
+        setState(() {
+          totalMedications = response.data;
+          loading = false;
+        });
+      } else {
+        setState(() {
+          loading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${response.erreur}')),
+        );
+      }
+    } else {
+      setState(() {
+        loading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Utilisateur ou ID utilisateur non trouvé.')),
+      );
+    }
+    EasyLoading.dismiss();
+  }
+
+  @override
+  Future<void> _fetchpharmacie() async {
+    if (id != null && id != null) {
+      EasyLoading.show(status: 'Chargement...');
+      ApiResponse response = await getPharmacierIDUser(id!);
+
+      if (response.erreur == null) {
+        setState(() {
+          pharmacie = response.data as pharmacieModel;
+        });
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('pharmacie_id', pharmacie?.id ?? '');
+      } else {
+        setState(() {
+          loading = false;
+        });
+        //ScaffoldMessenger.of(context).showSnackBar(
+        //SnackBar(content: Text('${response.erreur}')),
+        //);
+      }
+    } else {
+      setState(() {
+        loading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Utilisateur ou ID utilisateur non trouvé.')),
+      );
+    }
+    EasyLoading.dismiss();
+  }
+
+  Future<void> _fetchSomme() async {
+    if (id != null && id != null) {
+      ApiResponse response = await getsommePrix(id!);
+
+      if (response.erreur == null) {
+        setState(() {
+          totalPrice = response.data;
+          loading = false;
+        });
+      } else {
+        setState(() {
+          loading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${response.erreur}')),
+        );
+      }
+    } else {
+      setState(() {
+        loading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Utilisateur ou ID utilisateur non trouvé.')),
+      );
+    }
+    EasyLoading.dismiss();
   }
 
   @override
@@ -46,10 +159,10 @@ class _MyPharmacieState extends State<MyPharmacie> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Ma Pharmacie',
+            Text(
+              'Ma Pharmacie : ${pharmacie?.nom ?? ''}',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -62,7 +175,7 @@ class _MyPharmacieState extends State<MyPharmacie> {
             const SizedBox(height: 20),
             _buildCard(
               title: 'Prix Total des Médicaments',
-              value: '${totalPrice.toStringAsFixed(2)} €',
+              value: '${totalPrice}.00 CDF',
               icon: Icons.attach_money,
             ),
             const SizedBox(height: 20),
@@ -86,7 +199,11 @@ class _MyPharmacieState extends State<MyPharmacie> {
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {
-                        // Action pour ajouter un médicament
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const AddMymedicament()),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 0, 93, 76),

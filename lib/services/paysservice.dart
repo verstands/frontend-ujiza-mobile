@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:ujiza/constant.dart';
-import 'package:ujiza/models/PaysModel.dart';
-import 'package:ujiza/services/api_response.dart';
+import 'package:medigo/constant.dart';
+import 'package:medigo/models/PaysModel.dart';
+import 'package:medigo/services/api_response.dart';
 import 'package:http/http.dart' as http;
 
 Future<ApiResponse> getPaysLists() async {

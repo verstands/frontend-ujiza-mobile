@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ujiza/screens/home.dart';
-import 'package:ujiza/screens/mypharmacie.dart';
-import 'package:ujiza/screens/registrer.dart';
-import 'package:ujiza/services/api_response.dart';
-import 'package:ujiza/services/userservice.dart';
+import 'package:medigo/models/RegistreModel.dart';
+import 'package:medigo/screens/home.dart';
+import 'package:medigo/screens/mypharmacie.dart';
+import 'package:medigo/screens/registrer.dart';
+import 'package:medigo/services/api_response.dart';
+import 'package:medigo/services/userservice.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -21,21 +22,36 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
 
   void _loginUser() async {
-    // EasyLoading.show(status: 'Chargement...');
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
-      ApiResponse response =
+
+      ApiResponse<Map<String, dynamic>> response =
           await SignInService(_emailController.text, _passwordController.text);
 
       setState(() {
         _isLoading = false;
       });
 
-      if (response.erreur == null) {
+      if (response.erreur == null && response.data != null) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.remove('quartier');
+
+        String token = response.data!['token'] ?? '';
+        String id = response.data!['agent_id'] ?? '';
+        String nom = response.data!['agent_nom'] ?? '';
+        String prenom = response.data!['agent_prenom'] ?? '';
+        String telephone = response.data!['agent_telephone'] ?? '';
+        String email = response.data!['agent_email'] ?? '';
+
+        await prefs.setString('token', token);
+        await prefs.setString('agent_id', id);
+        await prefs.setString('agent_nom', nom);
+        await prefs.setString('agent_prenom', prenom);
+        await prefs.setString('agent_telephone', telephone);
+        await prefs.setString('agent_email', email);
+
         Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (context) => MyPharmacie()),
             (route) => false);
@@ -43,9 +59,6 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('${response.erreur}')));
       }
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -148,8 +161,7 @@ class _LoginPageState extends State<LoginPage> {
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 15),
                               ),
-                              icon: Icon(Icons.login,
-                                  color: Colors.white), // Icône du bouton
+                              icon: Icon(Icons.login, color: Colors.white),
                               label: const Text(
                                 'Se connecter',
                                 style: TextStyle(

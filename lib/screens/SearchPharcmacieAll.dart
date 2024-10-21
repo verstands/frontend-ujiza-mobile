@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:ujiza/models/pharmacieModel.dart';
-import 'package:ujiza/screens/medicamentAll.dart';
-import 'package:ujiza/services/api_response.dart';
-import 'package:ujiza/services/pharmacieservice.dart';
-import 'package:ujiza/utils/app_open_ad.dart';
-import 'package:ujiza/utils/customAppBar.dart';
+import 'package:medigo/models/pharmacieModel.dart';
+import 'package:medigo/screens/medicamentAll.dart';
+import 'package:medigo/services/api_response.dart';
+import 'package:medigo/services/pharmacieservice.dart';
+import 'package:medigo/utils/app_open_ad.dart';
+import 'package:medigo/utils/customAppBar.dart';
 
 class SearchPharmacieAll extends StatefulWidget {
   final String id;
@@ -175,7 +175,7 @@ class _SearchPharmacieAllState extends State<SearchPharmacieAll> {
                                           const SizedBox(width: 4),
                                           Expanded(
                                             child: Text(
-                                              'Téléphone: ${pharmacie.telephone ?? "Inconnu"}',
+                                              'Téléphone: ${pharmacie.communeavenu ?? "Inconnu"}',
                                               style: TextStyle(
                                                   color: Colors.grey[700]),
                                             ),
