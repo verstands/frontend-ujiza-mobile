@@ -29,6 +29,7 @@ class _MyPharmacieState extends State<MyPharmacie> {
   pharmacieModel? pharmacie;
   bool loading = true;
   String? id;
+  String? phar;
 
   @override
   void initState() {
@@ -76,7 +77,7 @@ class _MyPharmacieState extends State<MyPharmacie> {
         loading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Utilisateur ou ID utilisateur non trouvé.')),
+        SnackBar(content: Text('')),
       );
     }
     EasyLoading.dismiss();
@@ -98,16 +99,16 @@ class _MyPharmacieState extends State<MyPharmacie> {
         setState(() {
           loading = false;
         });
-        //ScaffoldMessenger.of(context).showSnackBar(
-        //SnackBar(content: Text('${response.erreur}')),
-        //);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('')),
+        );
       }
     } else {
       setState(() {
         loading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Utilisateur ou ID utilisateur non trouvé.')),
+        SnackBar(content: Text('ok')),
       );
     }
     EasyLoading.dismiss();
@@ -135,7 +136,7 @@ class _MyPharmacieState extends State<MyPharmacie> {
         loading = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Utilisateur ou ID utilisateur non trouvé.')),
+        SnackBar(content: Text('')),
       );
     }
     EasyLoading.dismiss();
@@ -146,7 +147,7 @@ class _MyPharmacieState extends State<MyPharmacie> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Tableau de bord",
+          "Tableau de bords",
           style: TextStyle(
             color: Colors.white,
           ),
@@ -179,62 +180,68 @@ class _MyPharmacieState extends State<MyPharmacie> {
               icon: Icons.attach_money,
             ),
             const SizedBox(height: 20),
-            Card(
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Actions Rapides',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+            id!.isNotEmpty
+                ? Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Actions Rapides',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AddMymedicament()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 0, 93, 76),
+                            ),
+                            child: const Text(
+                              'Ajouter un mediciament ',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const Mymedicament()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color.fromARGB(255, 0, 93, 76),
+                            ),
+                            child: const Text(
+                              'Voir les médicaments',
+                              style: TextStyle(
+                                  color: Colors
+                                      .white), // Couleur du texte en blanc
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AddMymedicament()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 0, 93, 76),
-                      ),
-                      child: const Text(
-                        'Ajouter un mediciament ',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const Mymedicament()),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 0, 93, 76),
-                      ),
-                      child: const Text(
-                        'Voir les médicaments',
-                        style: TextStyle(
-                            color: Colors.white), // Couleur du texte en blanc
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  )
+                : const SizedBox.shrink(),
           ],
         ),
       ),

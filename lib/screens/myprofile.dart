@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:medigo/services/api_response.dart';
+import 'package:medigo/services/userservice.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:medigo/utils/MeuApp.dart';
+import 'package:medigo/utils/MeuApp.dart'; // Assurez-vous que ce chemin est correct
 
 class Myprofile extends StatefulWidget {
   const Myprofile({super.key});
@@ -10,6 +12,19 @@ class Myprofile extends StatefulWidget {
 }
 
 class _MyprofileState extends State<Myprofile> {
+  String? nom;
+  String? prenom;
+  String? id;
+  String? email;
+  String adresse = "456 Rue de la Liberté, Kinshasa";
+  String? telephone;
+  bool _isLoading = false;
+
+  final TextEditingController nomController = TextEditingController();
+  final TextEditingController prenomController = TextEditingController();
+  final TextEditingController telephoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -17,57 +32,46 @@ class _MyprofileState extends State<Myprofile> {
     getPrenom();
     getEmail();
     getTelephone();
+    getid();
   }
 
-  String? nom;
-  String? prenom;
-  String? email;
-  String adresse = "456 Rue de la Liberté, Kinshasa";
-  String? telephone;
-  String photoUrl = "https://via.placeholder.com/150";
+  Future<void> getid() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      id = prefs.getString('agent_id');
+    });
+  }
 
   Future<void> getNom() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? agentToken = prefs.getString('agent_nom');
-
-    if (agentToken != null) {
-      setState(() {
-        nom = agentToken;
-      });
-    }
+    setState(() {
+      nom = prefs.getString('agent_nom');
+      nomController.text = nom ?? '';
+    });
   }
 
   Future<void> getPrenom() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? agentToken = prefs.getString('agent_prenom');
-
-    if (agentToken != null) {
-      setState(() {
-        prenom = agentToken;
-      });
-    }
+    setState(() {
+      prenom = prefs.getString('agent_prenom');
+      prenomController.text = prenom ?? '';
+    });
   }
 
   Future<void> getEmail() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? agentToken = prefs.getString('agent_email');
-
-    if (agentToken != null) {
-      setState(() {
-        email = agentToken;
-      });
-    }
+    setState(() {
+      email = prefs.getString('agent_email');
+      emailController.text = email ?? '';
+    });
   }
 
   Future<void> getTelephone() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? agentToken = prefs.getString('agent_telephone');
-
-    if (agentToken != null) {
-      setState(() {
-        telephone = agentToken;
-      });
-    }
+    setState(() {
+      telephone = prefs.getString('agent_telephone');
+      telephoneController.text = telephone ?? '';
+    });
   }
 
   @override
@@ -98,18 +102,22 @@ class _MyprofileState extends State<Myprofile> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              '$prenom  $nom',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 0, 93, 76),
+            Center(
+              child: Text(
+                '$prenom  $nom',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color.fromARGB(255, 0, 93, 76),
+                ),
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              '$email',
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
+            Center(
+              child: Text(
+                '$email',
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
+              ),
             ),
             const SizedBox(height: 16),
             Card(
@@ -122,17 +130,6 @@ class _MyprofileState extends State<Myprofile> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on,
-                            color: Color.fromARGB(255, 0, 93, 76)),
-                        const SizedBox(width: 8),
-                        const Text('Adresse:',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(adresse, style: const TextStyle(fontSize: 16)),
                     const SizedBox(height: 10),
                     Row(
                       children: [
@@ -144,7 +141,8 @@ class _MyprofileState extends State<Myprofile> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(telephone!, style: const TextStyle(fontSize: 16)),
+                    Text(telephone ?? 'Non renseigné',
+                        style: const TextStyle(fontSize: 16)),
                   ],
                 ),
               ),
@@ -171,7 +169,6 @@ class _MyprofileState extends State<Myprofile> {
   }
 
   void _modifierProfil() {
-    // Logique pour modifier les informations de profil
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -181,93 +178,109 @@ class _MyprofileState extends State<Myprofile> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           content: SizedBox(
-            width: 300, // Largeur de la boîte de dialogue
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Champ Nom
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Nom',
-                    prefixIcon: const Icon(Icons.person),
-                    border: const OutlineInputBorder(),
+            width: 300,
+            child: SingleChildScrollView(
+              // Ajoutez cette ligne
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nomController,
+                    decoration: InputDecoration(
+                      labelText: 'Nom',
+                      prefixIcon: const Icon(Icons.person),
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      nom = value;
-                    });
-                  },
-                  controller: TextEditingController(text: nom),
-                ),
-                const SizedBox(height: 16), // Espacement
-
-                // Champ Adresse
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Adresse',
-                    prefixIcon: const Icon(Icons.location_on),
-                    border: const OutlineInputBorder(),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: prenomController,
+                    decoration: InputDecoration(
+                      labelText: 'Prenom',
+                      prefixIcon: const Icon(Icons.person),
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      adresse = value;
-                    });
-                  },
-                  controller: TextEditingController(text: adresse),
-                ),
-                const SizedBox(height: 16), // Espacement
-
-                // Champ Téléphone
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Téléphone',
-                    prefixIcon: const Icon(Icons.phone),
-                    border: const OutlineInputBorder(),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: telephoneController,
+                    decoration: InputDecoration(
+                      labelText: 'Téléphone',
+                      prefixIcon: const Icon(Icons.phone),
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      telephone = value;
-                    });
-                  },
-                  controller: TextEditingController(text: telephone),
-                ),
-                const SizedBox(height: 16), // Espacement
-
-                // Champ Email
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email),
-                    border: const OutlineInputBorder(),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: emailController,
+                    decoration: InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: const Icon(Icons.email),
+                      border: const OutlineInputBorder(),
+                    ),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      email = value;
-                    });
-                  },
-                  controller: TextEditingController(text: email),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Fermer le dialogue
+                Navigator.of(context).pop();
               },
               child: const Text('Annuler'),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Fermer le dialogue
-                // Ajouter ici la logique pour sauvegarder les modifications
+              onPressed: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.setString('agent_nom', nomController.text);
+                await prefs.setString('agent_email', emailController.text);
+                await prefs.setString('agent_prenom', prenomController.text);
+                await prefs.setString(
+                    'agent_telephone', telephoneController.text);
+
+                Navigator.of(context).pop();
+                setState(() {
+                  nom = nomController.text;
+                  email = emailController.text;
+                  telephone = telephoneController.text;
+                  prenom = prenomController.text;
+                });
+
+                ApiResponse response = await UpdateUser(
+                  nomController.text,
+                  prenomController.text,
+                  emailController.text,
+                  telephoneController.text,
+                  id!,
+                );
+
+                setState(() {
+                  _isLoading = false;
+                });
+
+                if (response.erreur == null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Myprofile(),
+                    ),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Profil mis à jour avec succès!')),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('${response.erreur}')),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromARGB(
-                    255, 0, 93, 76), // Couleur personnalisée
+                backgroundColor: const Color.fromARGB(255, 0, 93, 76),
               ),
               child: const Text(
-                'Sauvegarder',
+                'Modifier',
                 style: TextStyle(color: Colors.white),
               ),
             ),

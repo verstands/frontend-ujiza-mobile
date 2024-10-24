@@ -126,8 +126,9 @@ class _MedicamentsPageState extends State<MedicamentsPage> {
                                 'prix': medicament.prix.toString()!,
                                 'description': medicament.description!,
                                 'pharmacie': medicament.pharmacie!.nom!,
-                                'commune': medicament.pharmacie!.commune!,
-                                'telephone': medicament.pharmacie!.image!,
+                                'commune': medicament.pharmacie!.commune!.nom!,
+                                'telephone':
+                                    medicament.pharmacie!.agents!.telephone!,
                               },
                             ),
                           ));

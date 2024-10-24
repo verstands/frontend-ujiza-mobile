@@ -41,7 +41,7 @@ class _HomeState extends State<Home> {
       QuartierModel quartier = QuartierModel(
         id: quartierMap['id'],
         nom: quartierMap['nom'],
-        commune: Commune(nom: quartierMap['communeNom']),
+        //commune: Commune(nom: quartierMap['communeNom']),
       );
 
       setState(() {
@@ -150,12 +150,15 @@ class SuggestionsPage extends StatefulWidget {
 
 class _SuggestionsPageState extends State<SuggestionsPage> {
   List<ProduitPharModel> suggestions = [];
+  List<ProduitPharModel> filteredSuggestions = [];
   bool loading = true;
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _fetchPoduit();
+    searchController.addListener(_filterSuggestions);
   }
 
   Future<void> _fetchPoduit() async {
@@ -165,6 +168,7 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
     if (response.erreur == null) {
       setState(() {
         suggestions = response.data as List<ProduitPharModel>;
+        filteredSuggestions = suggestions;
         loading = false;
       });
     } else {
@@ -178,6 +182,23 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
     EasyLoading.dismiss();
   }
 
+  void _filterSuggestions() {
+    String query = searchController.text.toLowerCase();
+    setState(() {
+      filteredSuggestions = suggestions.where((produit) {
+        return produit.nom!
+            .toLowerCase()
+            .contains(query); // Filter based on name
+      }).toList();
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose(); // Dispose the controller
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -187,6 +208,7 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
         child: Column(
           children: [
             TextField(
+              controller: searchController,
               decoration: InputDecoration(
                 hintText: 'Rechercher produits',
                 filled: true,
@@ -203,109 +225,138 @@ class _SuggestionsPageState extends State<SuggestionsPage> {
             ),
             const SizedBox(height: 16.0),
             Expanded(
-              child: ListView.builder(
-                itemCount: suggestions.length,
-                itemBuilder: (context, index) {
-                  final produit = suggestions[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => MedicamentDetailPage(
-                              medicament: {
-                                'id': produit.id!,
-                                'nom': produit.nom!,
-                                'dosage': produit.dosage!,
-                                'prix': produit.prix.toString(),
-                                'description': produit.description!
-                              },
-                            ),
-                          ));
-                    },
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 12.0),
-                                child: Icon(
-                                  Icons.medical_services_outlined,
-                                  color: Color.fromARGB(255, 0, 93, 76),
-                                  size: 50.0,
+              child: loading
+                  ? Center(child: Text(""))
+                  : ListView.builder(
+                      itemCount: filteredSuggestions.length,
+                      itemBuilder: (context, index) {
+                        final produit = filteredSuggestions[index];
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MedicamentDetailPage(
+                                  medicament: {
+                                    'id': produit.id!,
+                                    'nom': produit.nom!,
+                                    'dosage': produit.dosage!,
+                                    'prix': produit.prix.toString(),
+                                    'description': produit.description!,
+                                    'pharmacie': produit.pharmacie!.nom!,
+                                    'commune': produit.pharmacie!.commune!.nom!,
+                                    'telephone':
+                                        produit.pharmacie!.agents!.telephone!,
+                                  },
                                 ),
                               ),
-                              Expanded(
-                                child: Column(
+                            );
+                          },
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      produit.nom ?? 'Sans nom',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16.0,
-                                        color: Colors.black87,
+                                    Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 12.0),
+                                      child: Icon(
+                                        Icons.medical_services_outlined,
+                                        color: Color.fromARGB(255, 0, 93, 76),
+                                        size: 50.0,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    SizedBox(height: 4.0),
-                                    Text(
-                                      produit.description != null
-                                          ? produit.description!.length > 30
-                                              ? produit.description!
-                                                      .substring(0, 30) +
-                                                  '...'
-                                              : produit.description!
-                                          : 'Aucune description disponible',
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(color: Colors.grey[600]),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            produit.nom ?? '',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16.0,
+                                              color: Colors.black87,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          SizedBox(height: 6.0),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.local_pharmacy,
+                                                size: 16.0,
+                                                color: Colors.grey[600],
+                                              ),
+                                              SizedBox(width: 4.0),
+                                              Text(
+                                                produit.pharmacie!.nom!,
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 13.0,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.location_city,
+                                                size: 16.0,
+                                                color: Colors.grey[600],
+                                              ),
+                                              SizedBox(width: 4.0),
+                                              Text(
+                                                produit
+                                                    .pharmacie!.commune!.nom!,
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontSize: 13.0,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.attach_money,
+                                                size: 16.0,
+                                                color: Colors.grey[600],
+                                              ),
+                                              SizedBox(width: 4.0),
+                                              Text(
+                                                '${produit.prix} CDF',
+                                                style: TextStyle(
+                                                  color: Colors.grey[600],
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                    SizedBox(height: 6.0),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on,
-                                          size: 16.0,
-                                          color: Colors.grey[600],
-                                        ),
-                                        SizedBox(width: 4.0),
-                                        Text(
-                                          (produit.pharmacie?.commune != null &&
-                                                  produit.pharmacie!.commune!
-                                                      .isNotEmpty)
-                                              ? produit.pharmacie!.id!
-                                              : 'Commune inconnue',
-                                          style: TextStyle(
-                                              color: Colors.grey[600],
-                                              fontSize: 13.0),
-                                        ),
-                                      ],
+                                    Icon(
+                                      Icons.arrow_forward_ios,
+                                      size: 16.0,
+                                      color: Colors.grey[600],
                                     ),
                                   ],
                                 ),
                               ),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 16.0,
-                                color: Colors.grey[600],
+                              Divider(
+                                color: Colors.grey[400],
+                                thickness: 1.0,
                               ),
                             ],
                           ),
-                        ),
-                        Divider(
-                          color: Colors.grey[400],
-                          thickness: 1.0,
-                        ),
-                      ],
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),

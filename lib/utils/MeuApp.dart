@@ -66,22 +66,19 @@ class _AppMenuState extends State<AppMenu> {
               color: Color.fromARGB(255, 0, 93, 76),
             ),
             child: Text(
-              'Ujiza',
+              'Medigo',
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 24,
               ),
             ),
           ),
-
-          // Si le token est vide, afficher ces options
           if (token.isEmpty) ...[
             ListTile(
               leading: Icon(Icons.local_pharmacy),
               title: const Text('Pharmacie'),
               onTap: () {
                 if (qid.isNotEmpty) {
-                  // Vérifie si l'ID a été récupéré
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -89,7 +86,6 @@ class _AppMenuState extends State<AppMenu> {
                     ),
                   );
                 } else {
-                  // Si l'ID n'est pas encore récupéré, afficher un message
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                         content: Text('ID non disponible pour l\'instant')),
@@ -141,13 +137,14 @@ class _AppMenuState extends State<AppMenu> {
               },
             ),
             ListTile(
-              title: const Text('Pharmacie',
+              title: const Text(
+                  'Avez-vous une pharmacie? Créer un compte vendeur pour votre pharmacie',
                   style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             const Divider(),
             ListTile(
               leading: Icon(Icons.login),
-              title: const Text('Se connecter'),
+              title: const Text('Connectez-vous'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -158,7 +155,7 @@ class _AppMenuState extends State<AppMenu> {
             ),
             ListTile(
               leading: Icon(Icons.app_registration),
-              title: const Text('S\'inscrire'),
+              title: const Text('Créer un compte'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(

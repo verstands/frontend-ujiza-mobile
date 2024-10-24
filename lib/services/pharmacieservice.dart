@@ -72,8 +72,8 @@ Future<ApiResponse> getPharmacieId(String id) async {
   return apiResponse;
 }
 
-Future<ApiResponse> CreatePharmacieService(
-    String nom, String commune, String avenue, String quartier, user) async {
+Future<ApiResponse> CreatePharmacieService(String nom, String commune,
+    String avenue, String quartier, user, String pays, String ville) async {
   ApiResponse apiResponse = ApiResponse();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? token = prefs.getString('token');
@@ -88,12 +88,14 @@ Future<ApiResponse> CreatePharmacieService(
       },
       body: {
         'nom': nom,
-        'commune': commune,
+        'idcommune': commune,
         'communeavenu': avenue,
         "id_quartier": quartier,
         "id_user": "a",
         "image": "a",
-        "agentsId": user.toString()
+        "agentsId": user.toString(),
+        "idpays": pays,
+        "idville": ville
       },
     );
 
@@ -140,7 +142,6 @@ Future<ApiResponse> getPharmacieUserID(String id) async {
         'Accept': 'application/json',
       },
     );
-
     switch (response.statusCode) {
       case 200:
         apiResponse.data =
@@ -190,6 +191,59 @@ Future<ApiResponse> getPharmacierIDUser(String id) async {
     }
   } catch (e) {
     apiResponse.erreur = serverError;
+  }
+  return apiResponse;
+}
+
+Future<ApiResponse> UpdatePharmacieUser(
+    String nom, String avenue, String id) async {
+  ApiResponse apiResponse = ApiResponse();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('token');
+
+  debugPrint(token);
+  try {
+    final response = await http.put(
+      Uri.parse('$createPharmacie/$id'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: {
+        'nom': nom,
+        'communeavenu': avenue,
+      },
+    );
+
+    switch (response.statusCode) {
+      case 200:
+        Map<String, dynamic> agent = jsonDecode(response.body) ?? {};
+        break;
+      case 400:
+        final errors = jsonDecode(response.body)['message'];
+        if (errors is List) {
+          apiResponse.erreur = errors.join("\n");
+        } else {
+          apiResponse.erreur = "Une erreur inattendue est survenue";
+        }
+        break;
+      case 401:
+        apiResponse.erreur =
+            "Non autorisé : veuillez vérifier vos informations d'identification.";
+        break;
+
+      case 409:
+        final conflictError = jsonDecode(response.body)['message'];
+        apiResponse.erreur =
+            conflictError is String ? conflictError : "Conflit détecté";
+        break;
+      default:
+        apiResponse.erreur = jsonDecode(response.body)['message'];
+        break;
+    }
+  } catch (e) {
+    apiResponse.erreur =
+        "Erreur du serveur : impossible de contacter le serveur.";
   }
   return apiResponse;
 }

@@ -40,7 +40,7 @@ class _PharmacieAllListState extends State<PharmacieAllList> {
       QuartierModel quartier = QuartierModel(
         id: quartierMap['id'],
         nom: quartierMap['nom'],
-        commune: Commune(nom: quartierMap['communeNom']),
+        //commune: Commune(nom: quartierMap['communeNom']),
       );
       setState(() {
         quartierInfo = quartier.id.toString();
@@ -86,7 +86,7 @@ class _PharmacieAllListState extends State<PharmacieAllList> {
     final filteredPharmacies = pharmacies.where((pharmacie) {
       return (pharmacie.nom?.toLowerCase() ?? "").contains(searchQuery) ||
           (pharmacie.communeavenu?.toLowerCase() ?? "").contains(searchQuery) ||
-          (pharmacie.commune?.toLowerCase() ?? "").contains(searchQuery);
+          (pharmacie.commune?.nom?.toLowerCase() ?? "").contains(searchQuery);
     }).toList();
 
     return Scaffold(

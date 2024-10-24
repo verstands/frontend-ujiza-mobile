@@ -14,6 +14,7 @@ class _CarouselPageState extends State<CarouselPage> {
     'https://via.placeholder.com/600x400.png?text=Image+2',
     'https://via.placeholder.com/600x400.png?text=Image+3',
     'https://via.placeholder.com/600x400.png?text=Image+4',
+    'https://via.placeholder.com/600x400.png?text=Image+4',
   ];
 
   int _currentIndex = 0;
@@ -48,7 +49,7 @@ class _CarouselPageState extends State<CarouselPage> {
                         color: Colors.black.withOpacity(0.3),
                         spreadRadius: 2,
                         blurRadius: 8,
-                        offset: Offset(0, 4), // Position de l'ombre
+                        offset: Offset(0, 5),
                       ),
                     ],
                   ),

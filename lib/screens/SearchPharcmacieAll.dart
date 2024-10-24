@@ -59,18 +59,16 @@ class _SearchPharmacieAllState extends State<SearchPharmacieAll> {
 
   @override
   Widget build(BuildContext context) {
-    // Filtrer la liste de pharmacies selon la recherche
     final filteredPharmacies = pharmacies.where((pharmacie) {
       return (pharmacie.nom?.toLowerCase() ?? "").contains(searchQuery) ||
           (pharmacie.communeavenu?.toLowerCase() ?? "").contains(searchQuery) ||
-          (pharmacie.commune?.toLowerCase() ?? "").contains(searchQuery);
+          (pharmacie.commune?.nom?.toLowerCase() ?? "").contains(searchQuery);
     }).toList();
 
     return Scaffold(
       appBar: const CustomAppBar(title: "Pharmacies"),
       body: Column(
         children: [
-          // Barre de recherche
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: TextField(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:medigo/screens/mypharmacie.dart';
+import 'package:medigo/screens/updatemypharmacie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:medigo/models/pharmacieModel.dart';
 import 'package:medigo/screens/AddMypharmacie.dart';
@@ -15,13 +17,16 @@ class DetailMypharmacie extends StatefulWidget {
 }
 
 class _DetailMypharmacieState extends State<DetailMypharmacie> {
-  // Informations par défaut
   String nomPharmacie = "Ma Pharmacie";
   String adresse = "123 Rue de la Santé, Kinshasa";
   String telephone = "+243 123 456 789";
   pharmacieModel? pharmacies;
   bool loading = true;
   String? id;
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  bool _isLoading = false;
 
   void getUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -39,25 +44,47 @@ class _DetailMypharmacieState extends State<DetailMypharmacie> {
     if (id == null) {
       return;
     }
-
     EasyLoading.show(status: 'Chargement...');
     ApiResponse response = await getPharmacieUserID(id!);
 
     if (response.erreur == null) {
       setState(() {
-        pharmacies = response.data as pharmacieModel; // Pas besoin de liste
+        pharmacies = response.data as pharmacieModel;
         loading = false;
       });
     } else {
       setState(() {
         loading = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: ${response.erreur}')),
-      );
     }
-
     EasyLoading.dismiss();
+  }
+
+  void _updatePharmacie() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+      ApiResponse response = await UpdatePharmacieUser(
+          _nameController.text, _addressController.text, pharmacies!.id!);
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (response.erreur == null) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Pharmacie modifiée avec succèssssssssssss')));
+
+        await Future.delayed(const Duration(seconds: 1));
+        _fetchDetail();
+      } else {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('${response.erreur}')));
+      }
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -68,6 +95,9 @@ class _DetailMypharmacieState extends State<DetailMypharmacie> {
   }
 
   void _modifierInfos() {
+    _nameController.text = pharmacies?.nom ?? "";
+    _addressController.text = pharmacies?.communeavenu ?? "";
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -77,76 +107,83 @@ class _DetailMypharmacieState extends State<DetailMypharmacie> {
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Nom de la Pharmacie',
-                    labelStyle: const TextStyle(
-                      color: Color.fromARGB(255, 0, 93, 76),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: const Color.fromARGB(255, 0, 93, 76),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: 'Nom de la Pharmacie',
+                      labelStyle: const TextStyle(
+                        color: Color.fromARGB(255, 0, 93, 76),
                       ),
-                    ),
-                    prefixIcon: const Icon(Icons.store,
-                        color: Color.fromARGB(255, 0, 93, 76)),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      nomPharmacie = value;
-                    });
-                  },
-                  controller:
-                      TextEditingController(text: pharmacies!.nom ?? ""),
-                ),
-                const SizedBox(height: 16), // Ajoute un espace entre les champs
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Adresse',
-                    labelStyle: const TextStyle(
-                      color: Color.fromARGB(255, 0, 93, 76),
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(
-                        color: const Color.fromARGB(255, 0, 93, 76),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: const Color.fromARGB(255, 0, 93, 76),
+                        ),
                       ),
+                      prefixIcon: const Icon(Icons.store,
+                          color: Color.fromARGB(255, 0, 93, 76)),
                     ),
-                    prefixIcon: const Icon(Icons.location_on,
-                        color: Color.fromARGB(255, 0, 93, 76)),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Le nom de la pharmacie est obligatoire';
+                      }
+                      return null;
+                    },
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      adresse = value;
-                    });
-                  },
-                  controller: TextEditingController(
-                      text: pharmacies!.communeavenu ?? ""),
-                ),
-                const SizedBox(height: 16), // Ajoute un espace entre les champs
-              ],
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _addressController,
+                    decoration: InputDecoration(
+                      labelText: 'Adresse',
+                      labelStyle: const TextStyle(
+                        color: Color.fromARGB(255, 0, 93, 76),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(
+                          color: const Color.fromARGB(255, 0, 93, 76),
+                        ),
+                      ),
+                      prefixIcon: const Icon(Icons.location_on,
+                          color: Color.fromARGB(255, 0, 93, 76)),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'L\'adresse est obligatoire';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Fermer le dialogue
+                Navigator.of(context).pop();
               },
               child: const Text('Annuler'),
             ),
             ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Fermer le dialogue
+              onPressed: () async {
+                if (_formKey.currentState!.validate()) {
+                  _updatePharmacie();
+                  await _fetchDetail();
+                  Navigator.of(context).pop();
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 0, 93, 76),
               ),
               child: const Text(
-                'Sauvegarder',
+                'Modifier',
                 style: TextStyle(color: Colors.white),
               ),
             ),
@@ -157,6 +194,7 @@ class _DetailMypharmacieState extends State<DetailMypharmacie> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -165,13 +203,6 @@ class _DetailMypharmacieState extends State<DetailMypharmacie> {
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: const Color.fromARGB(255, 0, 93, 76),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: _modifierInfos,
-            color: Colors.white,
-          ),
-        ],
       ),
       drawer: AppMenu(),
       body: Padding(
@@ -182,7 +213,8 @@ class _DetailMypharmacieState extends State<DetailMypharmacie> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const AddMyPharmacie()),
+                      builder: (context) => const AddMyPharmacie(),
+                    ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -193,7 +225,7 @@ class _DetailMypharmacieState extends State<DetailMypharmacie> {
                   ),
                 ),
                 child: const Text(
-                  'Ajouter une Pharmacie',
+                  'Créer une pharmacie',
                   style: TextStyle(color: Colors.white),
                 ),
               )
@@ -255,8 +287,8 @@ class _DetailMypharmacieState extends State<DetailMypharmacie> {
                           const SizedBox(height: 4),
                           Text(
                             pharmacies != null
-                                ? "${pharmacies!.communeavenu ?? ''}, ${pharmacies!.qurtier?.nom ?? ''}"
-                                : "Information non disponible",
+                                ? "${pharmacies!.communeavenu ?? ''}"
+                                : "",
                             style: const TextStyle(fontSize: 16),
                           ),
                           const SizedBox(height: 10),
@@ -281,7 +313,106 @@ class _DetailMypharmacieState extends State<DetailMypharmacie> {
                                 : "",
                             style: const TextStyle(fontSize: 16),
                           ),
+                          Row(
+                            children: [
+                              const Icon(Icons.flag,
+                                  color: Color.fromARGB(255, 0, 93, 76)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Pays:',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            pharmacies != null
+                                ? (pharmacies!.pays?.nom ?? "")
+                                : "",
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          Row(
+                            children: [
+                              const Icon(Icons.location_city,
+                                  color: Color.fromARGB(255, 0, 93, 76)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Ville:',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            pharmacies != null
+                                ? (pharmacies!.villes?.nom ?? "")
+                                : "",
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                          Row(
+                            children: [
+                              const Icon(Icons.home,
+                                  color: Color.fromARGB(255, 0, 93, 76)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Quartier:',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            pharmacies != null
+                                ? (pharmacies!.qurtier?.nom ?? "")
+                                : "",
+                            style: const TextStyle(fontSize: 16),
+                          ),
                         ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => UpdateMyPharmacie(
+                              medicament: {
+                                'id': pharmacies!.id!,
+                                'nom': pharmacies!.nom!,
+                                'adresse': pharmacies!.communeavenu!
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(255, 0, 93, 76),
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      icon: const Icon(Icons.edit, color: Colors.white),
+                      label: const Text(
+                        'Modifier',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

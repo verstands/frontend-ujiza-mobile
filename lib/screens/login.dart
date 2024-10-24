@@ -76,7 +76,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const SizedBox(height: 50),
                   Text(
-                    'Se Connecter',
+                    'Connectez-vous',
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,

@@ -66,7 +66,7 @@ class _SignupPageState extends State<SignupPage> {
               children: [
                 const SizedBox(height: 50),
                 Text(
-                  'Créer un Compte',
+                  'Créer un compte',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,

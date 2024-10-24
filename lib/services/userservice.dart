@@ -106,3 +106,57 @@ Future<ApiResponse> RegistreService(String email, String password, String nom,
   }
   return apiResponse;
 }
+
+Future<ApiResponse> UpdateUser(String nom, String prenom, String email,
+    String telephone, String id) async {
+  ApiResponse apiResponse = ApiResponse();
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? token = prefs.getString('token');
+
+  try {
+    final response = await http.put(
+      Uri.parse('$agentendpoint/$id'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: {
+        'nom': nom,
+        'prenom': prenom,
+        'email': email,
+        'telephone': telephone,
+      },
+    );
+
+    switch (response.statusCode) {
+      case 200:
+        Map<String, dynamic> agent = jsonDecode(response.body) ?? {};
+        break;
+      case 400:
+        final errors = jsonDecode(response.body)['message'];
+        if (errors is List) {
+          apiResponse.erreur = errors.join("\n");
+        } else {
+          apiResponse.erreur = "Une erreur inattendue est survenue";
+        }
+        break;
+      case 401:
+        apiResponse.erreur =
+            "Non autorisé : veuillez vérifier vos informations d'identification.";
+        break;
+
+      case 409:
+        final conflictError = jsonDecode(response.body)['message'];
+        apiResponse.erreur =
+            conflictError is String ? conflictError : "Conflit détecté";
+        break;
+      default:
+        apiResponse.erreur = jsonDecode(response.body)['message'];
+        break;
+    }
+  } catch (e) {
+    apiResponse.erreur =
+        "Erreur du serveur : impossible de contacter le serveur.";
+  }
+  return apiResponse;
+}

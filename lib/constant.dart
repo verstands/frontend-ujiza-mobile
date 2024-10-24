@@ -16,6 +16,7 @@ const createPharmacie = '$baseURL/pharmacie';
 const getPharmacieIdD = '$baseURL/pharmacie/user/userid';
 const getUserPharmacie = '$baseURL/pharmacie/user';
 const getUserMyMedicament = '$baseURL/pharmacie/user/medicament';
+const agentendpoint = '$baseURL/agent';
 
 const serverError = "Aucune connexion";
 const unauthorized = "Erreur de la base des données ";

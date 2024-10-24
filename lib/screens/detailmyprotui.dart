@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:medigo/screens/mymedicament.dart';
+import 'package:medigo/screens/mypharmacie.dart';
+import 'package:medigo/screens/updatemymedoc.dart';
+import 'package:medigo/services/api_response.dart';
+import 'package:medigo/services/produitservice.dart';
 import 'package:medigo/utils/MeuApp.dart';
 import 'package:medigo/utils/app_open_ad.dart';
+import 'package:medigo/utils/banniere.dart';
 import 'package:medigo/utils/customAppBar.dart';
 
 class MyMedicamentDetailPage extends StatefulWidget {
@@ -26,6 +32,25 @@ class _MyMedicamentDetailPageState extends State<MyMedicamentDetailPage> {
   void dispose() {
     _appOpenAdManager.dispose();
     super.dispose();
+  }
+
+  Future<void> _deletemedoc() async {
+    ApiResponse response = await DeleteProduitUser(widget.medicament['id']!);
+    if (response.erreur == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Médicament supprimé avec succès !')),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const Mymedicament(),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${response.erreur}')),
+      );
+    }
   }
 
   void _showEditDialog() {
@@ -106,16 +131,47 @@ class _MyMedicamentDetailPageState extends State<MyMedicamentDetailPage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (nomController.text.isNotEmpty &&
+                    dosageController.text.isNotEmpty &&
+                    prixController.text.isNotEmpty &&
+                    descriptionController.text.isNotEmpty) {
+                  ApiResponse response = await UpdateProduitUser(
+                    nomController.text,
+                    dosageController.text,
+                    prixController.text,
+                    descriptionController.text,
+                    widget.medicament['id']!,
+                  );
+
+                  if (response.erreur == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Médicament modifié avec succès')),
+                    );
+                    Navigator.of(context).pop();
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('${response.erreur}')),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Veuillez remplir tous les champs.')),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 0, 93, 76),
+              ),
               child: const Text(
                 'Modifier',
-                style: TextStyle(color: Color.fromARGB(255, 0, 93, 76)),
+                style: TextStyle(color: Colors.white),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Annuler'),
             ),
           ],
         );
@@ -133,17 +189,17 @@ class _MyMedicamentDetailPageState extends State<MyMedicamentDetailPage> {
               const Text('Êtes-vous sûr de vouloir supprimer ce médicament ?'),
           actions: [
             TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Médicament supprimé !')),
-                );
-                Navigator.of(context).pop();
+              onPressed: () async {
+                Navigator.of(context).pop(); // Fermer le dialog
+
+                // Appeler la méthode de suppression et attendre sa réponse
+                await _deletemedoc();
               },
               child: const Text('Oui'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Fermer le dialog
               },
               child: const Text('Non'),
             ),
@@ -164,154 +220,183 @@ class _MyMedicamentDetailPageState extends State<MyMedicamentDetailPage> {
         backgroundColor: const Color.fromARGB(255, 0, 93, 76),
       ),
       drawer: AppMenu(),
-      body: Padding(
+      body: SingleChildScrollView(
+        // Ajout du SingleChildScrollView
         padding: const EdgeInsets.all(16.0),
-        child: Card(
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.medical_services,
-                      size: 50,
-                      color: Colors.green.shade600,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(
-                        widget.medicament['nom']!,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.green,
-                        ),
-                        overflow: TextOverflow
-                            .ellipsis, // Ajoute une ellipsis si le texte est trop long
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    const Icon(Icons.local_pharmacy, color: Colors.green),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      // Assure que le texte s'adapte à la largeur disponible
-                      child: Text(
-                        'Dosage : ${widget.medicament['dosage']}mg',
-                        style: const TextStyle(fontSize: 18),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const Icon(Icons.attach_money, color: Colors.green),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Prix : ${widget.medicament['prix']} CDF',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
+        child: Column(
+          children: [
+            Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.description, color: Colors.green),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Description : ${widget.medicament['description']}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.medical_services,
+                          size: 50,
+                          color: Colors.green.shade600,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Text(
+                            widget.medicament['nom']!,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        const Icon(Icons.local_pharmacy, color: Colors.green),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Dosage : ${widget.medicament['dosage']}mg',
+                            style: const TextStyle(fontSize: 18),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Icon(Icons.attach_money, color: Colors.green),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Prix : ${widget.medicament['prix']} CDF',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.description, color: Colors.green),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Description : ${widget.medicament['description']}',
+                            style: const TextStyle(fontSize: 16),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      children: [
+                        const Icon(Icons.store, color: Colors.green),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Pharmacie : ${widget.medicament['pharmacie']}',
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_city, color: Colors.green),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Commune : ${widget.medicament['commune']}',
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Icon(Icons.phone, color: Colors.green),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Téléphone : ${widget.medicament['telephone']}',
+                            style: const TextStyle(fontSize: 18),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => UpdateMyMedoc(
+                                  medicament: {
+                                    'id': widget.medicament['id'].toString(),
+                                    'nom': widget.medicament['nom'].toString(),
+                                    'dosage':
+                                        widget.medicament['dosage'].toString(),
+                                    'prix':
+                                        widget.medicament['prix'].toString(),
+                                    'description': widget
+                                        .medicament['description']
+                                        .toString(),
+                                    'pharmacie': widget.medicament['pharmacie']
+                                        .toString(),
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.edit, color: Colors.white),
+                          label: const Text(
+                            'Modifier',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                const Color.fromARGB(255, 0, 93, 76),
+                          ),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _showDeleteConfirmationDialog,
+                          icon: const Icon(Icons.delete, color: Colors.white),
+                          label: const Text('Supprimer',
+                              style: TextStyle(color: Colors.white)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    const Icon(Icons.store, color: Colors.green),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Pharmacie : ${widget.medicament['pharmacie']}',
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const Icon(Icons.location_city, color: Colors.green),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Commune : ${widget.medicament['commune']}',
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    const Icon(Icons.phone, color: Colors.green),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Téléphone : ${widget.medicament['telephone']}',
-                        style: const TextStyle(fontSize: 18),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    ElevatedButton.icon(
-                      onPressed: _showEditDialog,
-                      icon: const Icon(Icons.edit, color: Colors.white),
-                      label: const Text('Modifier',
-                          style: TextStyle(color: Colors.white)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 0, 93, 76),
-                      ),
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _showDeleteConfirmationDialog,
-                      icon: const Icon(Icons.delete, color: Colors.white),
-                      label: const Text('Supprimer',
-                          style: TextStyle(color: Colors.white)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
-          ),
+            const SizedBox(height: 16),
+            BannierePub(),
+          ],
         ),
       ),
     );
